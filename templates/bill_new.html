@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Bill</h2>
+
+<form id="billForm" method="POST" action="{{ url_for('create_bill') }}">
+  <table class="table table-bordered" id="billTable">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Stock</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr data-price="{{ product['price'] }}">
+        <td>{{ product['name'] }}</td>
+        <td>{{ product['stock'] }}</td>
+        <td>₹ {{ product['price'] }}</td>
+        <td>
+          <input type="number" class="form-control qty-input"
+                 name="quantity" min="0" max="{{ product['stock'] }}" value="0">
+          <input type="hidden" name="product_id" value="{{ product['id'] }}">
+        </td>
+        <td class="subtotal">₹ 0</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="row">
+    <div class="col-md-4">
+      <label>Discount Type</label>
+      <select class="form-control" name="discount_type" id="discountType">
+        <option value="amount">Amount</option>
+        <option value="percent">Percent</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label>Discount Value</label>
+      <input type="number" class="form-control" name="discount" id="discount" value="0">
+    </div>
+    <div class="col-md-4">
+      <label>Total</label>
+      <input type="text" id="grandTotal" class="form-control" readonly>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-success mt-3">Generate Bill</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+  function updateTotals() {
+    let total = 0;
+
+    $("#billTable tbody tr").each(function(){
+      let price = parseFloat($(this).data("price"));
+      let qty = parseInt($(this).find(".qty-input").val()) || 0;
+      let subtotal = price * qty;
+      $(this).find(".subtotal").text("₹ " + subtotal.toFixed(2));
+      total += subtotal;
+    });
+
+    // Apply discount
+    let discountVal = parseFloat($("#discount").val()) || 0;
+    let discountType = $("#discountType").val();
+
+    if(discountType === "percent") {
+      total = total - (total * discountVal / 100);
+    } else {
+      total = total - discountVal;
+    }
+
+    $("#grandTotal").val("₹ " + total.toFixed(2));
+  }
+
+  // Trigger recalculation
+  $(".qty-input, #discount, #discountType").on("input change", updateTotals);
+
+  updateTotals();
+});
+</script>
+{% endblock %}

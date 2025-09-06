@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Bills</h3>
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th>#</th><th>Date</th><th>Discount</th><th>Subtotal</th><th>Total</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bills %}
+      <tr>
+        <td>{{ b.id }}</td>
+        <td>{{ b.created_at }}</td>
+        <td>
+          {% if b.discount_type == 'percent' %}
+            {{ '%.2f'|format(b.discount_value) }}%
+          {% else %}
+            {{ '%.2f'|format(b.discount_value) }}
+          {% endif %}
+        </td>
+        <td>{{ '%.2f'|format(b.subtotal) }}</td>
+        <td>{{ '%.2f'|format(b.total) }}</td>
+        <td><a class="btn btn-outline-primary btn-sm" href="{{ url_for('bill_detail', bill_id=b.id) }}">View</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted">No bills yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
